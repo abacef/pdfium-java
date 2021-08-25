@@ -52,7 +52,6 @@ public class PdfiumTest {
 
     @Test
     public void testRenderPdf() throws IOException {
-        System.out.println("rend");
         val bytes = Files.readAllBytes(Paths.get("src/test/resources/sample doc.pdf"));
 
         val pdfBytesMemory = new Memory((long) bytes.length * Native.getNativeSize(Byte.TYPE));
