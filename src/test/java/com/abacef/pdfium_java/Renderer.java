@@ -2,17 +2,17 @@ package com.abacef.pdfium_java;
 
 import com.abacef.pdfium_java.fpdf_formfill.FPDF_FORMFILLINFO;
 import com.abacef.pdfium_java.fpdf_view.FPDF_LIBRARY_CONFIG;
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+import lombok.Builder;
+import lombok.Data;
 import lombok.val;
-import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.IntStream;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class Renderer {
 
@@ -35,11 +35,11 @@ public class Renderer {
     static Pointer loadDocument(
             Pointer pdf_bytes,
             int pdfBytesLen,
-            Pointer errorCode
+            IntByReference errorCode
     ) {
         Pointer doc = pdfium.FPDF_LoadMemDocument(pdf_bytes, pdfBytesLen, Pointer.NULL);
         if (doc == null) {
-            errorCode.setInt(0, pdfium.FPDF_GetLastError().intValue());
+            errorCode.setValue(pdfium.FPDF_GetLastError().intValue());
             return Pointer.NULL;
         }
 
@@ -52,10 +52,10 @@ public class Renderer {
         return formFillInfo;
     }
 
-    static Pointer loadForm(Pointer doc, FPDF_FORMFILLINFO formFillInfo, Pointer errorCode) {
+    static Pointer loadForm(Pointer doc, FPDF_FORMFILLINFO formFillInfo, IntByReference errorCode) {
         Pointer form = pdfium.FPDFDOC_InitFormFillEnvironment(doc, formFillInfo);
         if (form == null) {
-            errorCode.setInt(0, pdfium.FPDF_GetLastError().intValue());
+            errorCode.setValue(pdfium.FPDF_GetLastError().intValue());
             return null;
         }
 
@@ -70,10 +70,10 @@ public class Renderer {
         pdfium.FPDF_CloseDocument(doc);
     }
 
-    static Pointer loadPage(Pointer doc, Pointer form, int pageNum, Pointer errorCode) {
+    static Pointer loadPage(Pointer doc, Pointer form, int pageNum, IntByReference errorCode) {
         Pointer page = pdfium.FPDF_LoadPage(doc, pageNum);
         if (page == null) {
-            errorCode.setInt(0, pdfium.FPDF_GetLastError().intValue());
+            errorCode.setValue(pdfium.FPDF_GetLastError().intValue());
             return null;
         }
 
@@ -97,56 +97,107 @@ public class Renderer {
         pdfium.FPDF_RenderPage_Close(page);
     }
 
-    static void renderPageToImage(
-            Pointer page,
-            Pointer form,
-            int dpi,
-            Pointer imageBuff,
-            Pointer imageBuffLen,
-            Pointer errorCode
-    ) {
-        //WIP
-//        float pageWidthInPoints = 2
+    @Data
+    @Builder
+    private static class RenderBitmapReturn {
+        private Pointer buffer;
+        private int width;
+        private int height;
     }
 
-    public static void renderPdfPageToImage(Pointer pdfBytes,
-                                     int pdfBytesLen,
-                                     int pageNum,
-                                     int dpi,
-                                     Pointer imageBuff,
-                                     Pointer imageBuffLen,
-                                     Pointer errorCode) {
+    static RenderBitmapReturn renderPageToBitmap(
+            Pointer page,
+            Pointer form,
+            int dpi
+    ) {
+        val pageWidthInPoints = pdfium.FPDF_GetPageWidthF(page);
+        val pageWidthInInches = pageWidthInPoints / 72;
+        val width = (int)(pageWidthInInches * dpi);
+
+        val pageHeightInPoints = pdfium.FPDF_GetPageHeightF(page);
+        val pageHeightInInches = pageHeightInPoints / 72;
+        val height = (int)(pageHeightInInches * dpi);
+
+        val alpha = pdfium.FPDFPage_HasTransparency(page);
+
+        System.out.println("Width " + width);
+        System.out.println("Height " + height);
+        System.out.println("alpha " + alpha);
+
+        Pointer bitmap = pdfium.FPDFBitmap_Create(width, height, alpha);
+        if (bitmap == null) {
+            System.out.println("Failed");
+            return null;
+        }
+
+        NativeLong fillColor = new NativeLong(alpha == 1 ? 0x00000000 : 0xffffffff);
+        pdfium.FPDFBitmap_FillRect(bitmap, 0, 0, width, height, fillColor);
+        pdfium.FPDF_RenderPageBitmap(bitmap, page, 0, 0, width, height, 0, Pdfium.FPDF_ANNOT);
+        pdfium.FPDF_FFLDraw(form, bitmap, page, 0, 0, width, height, 0, Pdfium.FPDF_ANNOT);
+
+        Pointer buffer = pdfium.FPDFBitmap_GetBuffer(bitmap);
+
+        return RenderBitmapReturn.builder()
+                .buffer(buffer)
+                .width(width)
+                .height(height)
+                .build();
+    }
+
+    public static BufferedImage renderPdfPageToImage(
+            Pointer pdfBytes,
+            int pdfBytesLen,
+            int pageNum,
+            int dpi,
+            IntByReference errorCode
+    ) {
         Pointer doc = loadDocument(pdfBytes, pdfBytesLen, errorCode);
-        System.out.println("doc" + doc);
-        if (doc == Pointer.NULL) {
+        if (doc == null) {
+            System.out.println("Doc is null");
             closeLibrary();
-            return;
+            return null;
         }
 
         FPDF_FORMFILLINFO formFillInfo = makeFormFillInfo();
         Pointer form = loadForm(doc, formFillInfo, errorCode);
         if (form == null) {
+            System.out.println("form is null");
             closeDocument(doc);
             closeLibrary();
-            return;
+            return null;
         }
 
         Pointer page = loadPage(doc, form, pageNum, errorCode);
         if (page == null) {
+            System.out.println("page is null");
             closeForm(form);
             closeDocument(doc);
             closeLibrary();
-            return;
+            return null;
         }
 
-        renderPageToImage(page, form, dpi, imageBuff, imageBuffLen, errorCode);
-        if (imageBuff == null) {
+        RenderBitmapReturn bitmapRenderReturn = renderPageToBitmap(page, form, dpi);
+        BufferedImage image = null;
+        if (bitmapRenderReturn == null) {
+            System.out.println("image buff is null");
+            System.out.println(errorCode.getValue());
             closeRenderPage(page);
+        } else {
+            val width = bitmapRenderReturn.getWidth();
+            val height = bitmapRenderReturn.getHeight();
+            val buffer = bitmapRenderReturn.getBuffer();
+
+            BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+            int pixelCount = width * height;
+            int[] javaBuffer = buffer.getIntArray(0, pixelCount);
+            bufferedImage.setRGB(0, 0, width, height, javaBuffer, 0, width);
+            image = bufferedImage;
         }
 
         closePage(page, form);
         closeForm(form);
         closeDocument(doc);
         closeLibrary();
+        return image;
     }
 }

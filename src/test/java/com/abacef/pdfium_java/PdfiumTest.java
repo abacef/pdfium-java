@@ -4,12 +4,17 @@ import com.abacef.pdfium_java.fpdf_view.FPDF_LIBRARY_CONFIG;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -60,7 +65,13 @@ public class PdfiumTest {
 
         Renderer.pdfium = pdfium;
 
-        renderPdfPageToImage(pdfBytesMemory, bytes.length, 0, 300, Pointer.NULL, Pointer.NULL, Pointer.NULL);
+        val errorCode = new IntByReference();
+
+        BufferedImage bufferedImage = renderPdfPageToImage(pdfBytesMemory, bytes.length, 0, 300, errorCode);
+        assert bufferedImage != null;
+
+        File out = new File("src/test/resources/sampleOutput" + 0 + ".png");
+        ImageIO.write(bufferedImage,"png", out);
     }
 
 
