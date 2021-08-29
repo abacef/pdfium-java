@@ -1,11 +1,10 @@
-package com.abacef.pdfium_java;
+package com.abacef.pdfium;
 
-import com.abacef.pdfium_java.fpdf_view.FPDF_LIBRARY_CONFIG;
+import com.abacef.pdfium.fpdf_view.FPDF_LIBRARY_CONFIG;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.PointerByReference;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
@@ -20,7 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.IntStream;
 
-import static com.abacef.pdfium_java.Renderer.renderPdfPageToImage;
+import static com.abacef.pdfium.Renderer.renderPdfPageToImage;
 
 public class PdfiumTest {
 
@@ -46,13 +45,6 @@ public class PdfiumTest {
     void afterEach() {
         pdfium.FPDF_DestroyLibrary();
         pdfium = null;
-    }
-
-    @Test
-    @Ignore
-    public void initLibrary() {
-        pdfium.FPDF_DestroyLibrary();
-        pdfium.FPDF_InitLibrary();
     }
 
     @Test

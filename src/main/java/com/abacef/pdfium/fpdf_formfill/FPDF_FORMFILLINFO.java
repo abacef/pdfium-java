@@ -1,4 +1,4 @@
-package com.abacef.pdfium_java.fpdf_formfill;
+package com.abacef.pdfium.fpdf_formfill;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;

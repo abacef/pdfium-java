@@ -1,7 +1,7 @@
-package com.abacef.pdfium_java;
+package com.abacef.pdfium;
 
-import com.abacef.pdfium_java.fpdf_formfill.FPDF_FORMFILLINFO;
-import com.abacef.pdfium_java.fpdf_view.FPDF_LIBRARY_CONFIG;
+import com.abacef.pdfium.fpdf_formfill.FPDF_FORMFILLINFO;
+import com.abacef.pdfium.fpdf_view.FPDF_LIBRARY_CONFIG;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
