@@ -5,6 +5,8 @@ I have heard of automated ways of doing this like JNAerator, but I was running i
 
 ## Using
 
+Currently, I have only bundled the linux x86_64 binary, so if you want to use it on another platform, let me know. It is as simple as adding a binary to an aptly named folder.
+
 I hope to deploy this to maven central in the future. I may have done that by the time you are reading this. If so, download it using maven like so
 
 ```xml
