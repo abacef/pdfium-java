@@ -1,6 +1,6 @@
-package com.abacef.pdfium;
+package io.github.abacef.pdfium;
 
-import com.abacef.pdfium.fpdf_formfill.FPDF_FORMFILLINFO;
+import io.github.abacef.pdfium.fpdf_formfill.FPDF_FORMFILLINFO;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;

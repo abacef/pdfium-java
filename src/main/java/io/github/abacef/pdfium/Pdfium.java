@@ -1,7 +1,7 @@
-package com.abacef.pdfium;
+package io.github.abacef.pdfium;
 
-import com.abacef.pdfium.fpdf_formfill.FPDF_FORMFILLINFO;
-import com.abacef.pdfium.fpdf_view.FPDF_LIBRARY_CONFIG;
+import io.github.abacef.pdfium.fpdf_formfill.FPDF_FORMFILLINFO;
+import io.github.abacef.pdfium.fpdf_view.FPDF_LIBRARY_CONFIG;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
@@ -10,7 +10,9 @@ import com.sun.jna.Pointer;
 public interface Pdfium extends Library {
     String SHARED_OBJECT_NAME = "pdfium";
 
-    Pdfium instance = Native.load(SHARED_OBJECT_NAME, Pdfium.class);
+    static Pdfium newInstance() {
+        return Native.load(SHARED_OBJECT_NAME, Pdfium.class);
+    }
 
     void FPDF_InitLibrary();
     void FPDF_DestroyLibrary();
@@ -35,8 +37,26 @@ public interface Pdfium extends Library {
     Pointer FPDFBitmap_Create(int width, int height, int alpha);
     void FPDFBitmap_FillRect(Pointer bitmap, int left, int top, int width, int height, NativeLong color);
     void FPDF_RenderPageBitmap(
-            Pointer bitmap, Pointer page, int startX, int startY, int sizeX, int sizeY, int rotate, int flags);
-    void FPDF_FFLDraw(Pointer form, Pointer bitmap, Pointer page, int startX, int startY, int sizeX, int sizeY, int rotate, int flags);
+            Pointer bitmap,
+            Pointer page,
+            int startX,
+            int startY,
+            int sizeX,
+            int sizeY,
+            int rotate,
+            int flags
+    );
+    void FPDF_FFLDraw(
+            Pointer form,
+            Pointer bitmap,
+            Pointer page,
+            int startX,
+            int startY,
+            int sizeX,
+            int sizeY,
+            int rotate,
+            int flags
+    );
     Pointer FPDFBitmap_GetBuffer(Pointer bitmap);
 
 

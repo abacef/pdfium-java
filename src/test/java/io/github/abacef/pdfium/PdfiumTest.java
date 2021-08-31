@@ -1,25 +1,22 @@
-package com.abacef.pdfium;
+package io.github.abacef.pdfium;
 
-import com.abacef.pdfium.fpdf_view.FPDF_LIBRARY_CONFIG;
+import io.github.abacef.pdfium.fpdf_view.FPDF_LIBRARY_CONFIG;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.IntStream;
 
-import static com.abacef.pdfium.Renderer.renderPdfPageToImage;
+import static io.github.abacef.pdfium.Renderer.renderPdfPageToImage;
 
 public class PdfiumTest {
 
@@ -37,7 +34,7 @@ public class PdfiumTest {
 
     @BeforeEach
     void beforeEach() {
-        pdfium = Pdfium.instance;
+        pdfium = Pdfium.newInstance();
         initLibraryWithConfigSetup();
     }
 

@@ -1,4 +1,4 @@
-package com.abacef.pdfium.fpdf_view;
+package io.github.abacef.pdfium.fpdf_view;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
