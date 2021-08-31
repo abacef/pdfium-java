@@ -62,8 +62,8 @@ public class PdfiumTest {
         BufferedImage bufferedImage = renderPdfPageToImage(pdfBytesMemory, bytes.length, 0, 300, errorCode);
         assert bufferedImage != null;
 
-        File out = new File("src/test/resources/sampleOutput" + 0 + ".png");
-        ImageIO.write(bufferedImage,"png", out);
+//        File out = new File("src/test/resources/sampleOutput" + 0 + ".png");
+//        ImageIO.write(bufferedImage,"png", out);
     }
 
 
